@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صانع العروض التقديمية الذكي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --bg: #f3f4f6;
+        }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        
+        .container {
+            background: white;
+            width: 500px;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        h2 { color: var(--primary); margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        label { display: block; text-align: right; font-weight: bold; margin-bottom: 5px; color: #555; }
+        input, textarea { 
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; 
+            margin-bottom: 15px; font-family: 'Cairo'; font-size: 14px; box-sizing: border-box;
+        }
+        textarea { height: 100px; }
+
+        /* اختيار الألوان */
+        .theme-selector { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        .theme-btn { width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: 0.3s; }
+        .theme-btn:hover, .theme-btn.active { transform: scale(1.2); border-color: #333; }
+
+        button.generate-btn {
+            background: #d35400; color: white; border: none; padding: 15px 30px; 
+            font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; 
+            width: 100%; font-family: 'Cairo'; transition: 0.3s;
+        }
+        button.generate-btn:hover { background: #e67e22; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📊 صانع العروض التقديمية (PPTX)</h2>
+    
+    <label>عنوان الدورة التدريبية</label>
+    <input type="text" id="courseTitle" placeholder="مثلاً: مهارات التواصل الفعال">
+
+    <label>اسم المدرب</label>
+    <input type="text" id="trainerName" placeholder="الاسم الثلاثي">
+
+    <label>أبرز محاور الدورة (كل محور في سطر)</label>
+    <textarea id="coursePoints" placeholder="- مقدمة في الاتصال&#10;- أنواع الجمهور&#10;- لغة الجسد"></textarea>
+
+    <label>اختر لون القالب (Theme)</label>
+    <div class="theme-selector">
+        <div class="theme-btn active" style="background:#2c3e50" onclick="setTheme('#2c3e50', this)"></div> <div class="theme-btn" style="background:#c0392b" onclick="setTheme('#c0392b', this)"></div> <div class="theme-btn" style="background:#16a085" onclick="setTheme('#16a085', this)"></div> <div class="theme-btn" style="background:#8e44ad" onclick="setTheme('#8e44ad', this)"></div> </div>
+
+    <button class="generate-btn" onclick="createPPT()">⚡ تحميل العرض التقديمي</button>
+</div>
+
+<script>
+    let selectedColor = '#2c3e50'; // اللون الافتراضي
+
+    function setTheme(color, btn) {
+        selectedColor = color;
+        document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    function createPPT() {
+        // 1. إنشاء عرض جديد
+        let pres = new PptxGenJS();
+        pres.layout = 'LAYOUT_16x9'; // مقاس الشاشة العريضة
+        pres.rtlMode = true; // تفعيل وضع اليمين لليسار للغة العربية
+
+        // البيانات من الحقول
+        let title = document.getElementById('courseTitle').value || 'عنوان الدورة';
+        let name = document.getElementById('trainerName').value || 'اسم المدرب';
+        let pointsText = document.getElementById('coursePoints').value;
+        let points = pointsText.split('\n').filter(line => line.trim() !== '');
+
+        // --- الشريحة 1: الغلاف ---
+        let slide1 = pres.addSlide();
+        
+        // زخرفة الخلفية (شريط ملون)
+        slide1.addShape(pres.ShapeType.rect, { x: 0, y: 0, w: '100%', h: '1.5', fill: selectedColor });
+        slide1.addShape(pres.ShapeType.rect, { x: 0, y: '85%', w: '100%', h: '15%', fill: '#ecf0f1' });
+
+        // العنوان
+        slide1.addText(title, { 
+            x: 0.5, y: 2, w: '90%', h: 1.5, 
+            fontSize: 44, bold: true, color: selectedColor, align: 'center', fontFace: 'Arial' 
+        });
+
+        // اسم المدرب
+        slide1.addText(`إعداد المدرب: ${name}`, { 
+            x: 0.5, y: 3.5, w: '90%', h: 1, 
+            fontSize: 24, color: '#7f8c8d', align: 'center', fontFace: 'Arial' 
+        });
+
+        // العام
+        slide1.addText("2026", { 
+            x: 0.5, y: 6.5, w: '90%', h: 0.5, 
+            fontSize: 18, color: '#95a5a6', align: 'center' 
+        });
+
+
+        // --- الشريحة 2: المحاور ---
+        let slide2 = pres.addSlide();
+        
+        // عنوان الشريحة
+        slide2.addText("محاور البرنامج التدريبي", { 
+            x: 0.5, y: 0.5, w: '90%', h: 0.8, 
+            fontSize: 32, bold: true, color: selectedColor, align: 'right', 
+            border: { pt: 0, pb: '3', color: selectedColor } // خط تحت العنوان
+        });
+
+        // إضافة النقاط (Bullets)
+        let bulletItems = points.map(p => ({ text: p, options: { fontSize: 24, breakLine: true, bullet: true, color: '#333333' } }));
+        
+        if(bulletItems.length > 0) {
+            slide2.addText(bulletItems, { x: 0.5, y: 1.8, w: '90%', h: 4, align: 'right', rtl: true });
+        } else {
+            slide2.addText("لم يتم إضافة محاور...", { x: 0.5, y: 2, w: '90%', fontSize: 18, color: '#ccc', align: 'center' });
+        }
+
+        // إضافة ملاحظات للمحاضر (ميزة ذكية)
+        slide2.addNotes("تذكر أن توزع الوقت بالتساوي بين هذه المحاور، وخصص 10 دقائق للنقاش في نهاية كل محور.");
+
+
+        // --- الشريحة 3: الخاتمة ---
+        let slide3 = pres.addSlide();
+        slide3.background = { color: selectedColor }; // خلفية ملونة بالكامل
+        
+        slide3.addText("شكراً لحسن استماعكم", { 
+            x: 1, y: 2.5, w: '80%', h: 1, 
+            fontSize: 48, bold: true, color: 'FFFFFF', align: 'center' 
+        });
+
+        slide3.addText("@MOHDASIRI99", { 
+            x: 1, y: 4, w: '80%', h: 1, 
+            fontSize: 24, color: 'ECF0F1', align: 'center' 
+        });
+
+        // حفظ الملف
+        pres.writeFile({ fileName: `${title}.pptx` });
+    }
+</script>
+
+</body>
+</html>
